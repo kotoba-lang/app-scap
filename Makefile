@@ -138,21 +138,13 @@ env-check: ## Check environment variables and dependencies
 	@echo ""
 	@echo "Environment variables:"
 	@echo "  DATABASE_URL: $${DATABASE_URL:-❌ Not set}"
-	@echo "  SUPABASE_URL: $${SUPABASE_URL:-❌ Not set}"
-	@echo "  SUPABASE_ANON_KEY: $${SUPABASE_ANON_KEY:-❌ Not set}"
-	@echo "  SUPABASE_SERVICE_ROLE_KEY: $${SUPABASE_SERVICE_ROLE_KEY:-⚠️ Optional (server-side only)}"
 	@echo "  NVD_API_KEY: $${NVD_API_KEY:-⚠️ Optional (public rate limits)}"
 
 env-template: ## Create environment template file
 	@echo "📝 Creating environment template..."
 	@printf '%s\n' \
-		'# Supabase Database Configuration' \
+		'# PostgreSQL (docker-compose.prod.yml `postgres` service)' \
 		'DATABASE_URL=postgresql://postgres:[password]@[host]:[port]/[database]' \
-		'' \
-		'# Supabase API Configuration' \
-		'SUPABASE_URL=https://[project-id].supabase.co' \
-		'SUPABASE_ANON_KEY=your-anon-key' \
-		'SUPABASE_SERVICE_ROLE_KEY=your-service-role-key' \
 		'' \
 		'# NVD API Configuration (Optional - for higher rate limits)' \
 		'NVD_API_KEY=your-nvd-api-key' \

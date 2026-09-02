@@ -75,7 +75,7 @@
     "prov:Entity"
   ],
   "name": "SCAP Security Content Automation Protocol Platform",
-  "description": "Automated SCAP data collection, processing, and compliance scanning platform using Workflow DevKit, Crawlee, Diesel ORM (Rust GraphQL), and Supabase",
+  "description": "Automated SCAP data collection, processing, and compliance scanning platform using Workflow DevKit, Crawlee, and Diesel ORM (Rust GraphQL) over PostgreSQL",
   "version": "0.1.0",
   "createdAt": "2024-01-01T00:00:00Z",
   "updatedAt": "2024-01-01T00:00:00Z",
@@ -254,7 +254,7 @@
             {
               "@id": "https://scap.etzhayyim.com/effect/real-time-monitoring",
               "name": "Real-time Security Monitoring",
-              "description": "Enable real-time monitoring of security vulnerabilities and compliance status through Supabase Realtime"
+              "description": "Enable real-time monitoring of security vulnerabilities and compliance status. Not implemented; the intended primitives are kotoba-lang/capability-topic-publish and capability-topic-subscribe"
             }
           ],
           "realizedBy": [

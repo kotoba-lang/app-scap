@@ -40,8 +40,14 @@ Continue building your app on:
 - **SCAP データ取得**: NIST、MITRE等の外部ソースからSCAPデータを自動収集
 - **Workflow DevKit**: 耐久性のあるワークフローによるSCAPデータ処理
 - **Crawlee**: Web scrapingによるSCAPコンテンツ収集
-- **Diesel ORM (Rust GraphQL) + Supabase**: PostgreSQLデータベースへの保存（Rust GraphQLサービス経由）
-- **Supabase Realtime**: リアルタイムメッセージングとイベント配信
+- **Diesel ORM (Rust GraphQL)**: PostgreSQL への保存（Rust GraphQL サービス経由。
+  PostgreSQL は `docker-compose.prod.yml` の `postgres` サービスで、managed な
+  Supabase プロジェクトではない）
+- **リアルタイム配信**: **未実装**。Supabase Realtime のアダプタが
+  `resources/adapters/supabase/` に置かれていたが、**どこからも import されて
+  おらず一度も配線されなかった**ため 2026-09-02 に撤去した。実装する際は
+  `kotoba-lang/capability-topic-publish` / `capability-topic-subscribe` を使う
+  （このワークスペース自身の pub/sub 権限プリミティブ）。
 - **GraphQL**: 型安全なAPIサービスによる統合
 - **コンプライアンススキャン**: AWS、GitHub等の統合されたセキュリティスキャン
 
@@ -50,7 +56,7 @@ Continue building your app on:
 \`\`\`
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   SCAP Sources  │    │ Workflow DevKit │    │ Rust GraphQL    │
-│  (NIST, MITRE)  │───▶│    Workflows    │───▶│ Diesel + Supabase│
+│  (NIST, MITRE)  │───▶│    Workflows    │───▶│ Diesel + Postgres│
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                               │                        │
                               ▼                        ▼
@@ -60,8 +66,8 @@ Continue building your app on:
                               │                        │
                               ▼                        ▼
                     ┌─────────────────┐    ┌─────────────────┐
-                    │Supabase Realtime│    │  GraphQL Service │
-                    │  (Messaging)    │    │   (API Layer)    │
+                    │ (realtime: 未実装)│    │  GraphQL Service │
+                    │                 │    │   (API Layer)    │
                     └─────────────────┘    └─────────────────┘
 \`\`\`
 
@@ -71,18 +77,14 @@ Continue building your app on:
 
 - Node.js 18+
 - pnpm
-- Supabase アカウント（またはローカルPostgreSQL）
+- PostgreSQL（`docker-compose` で起動する）
 
 ### 環境変数設定
 
 \`\`\`bash
-# Supabase Database設定
+# PostgreSQL 設定（docker-compose.prod.yml の postgres サービス）
 DATABASE_URL=postgresql://postgres:[password]@[host]:[port]/[database]  # placeholder EXAMPLE
 
-# Supabase API設定
-SUPABASE_URL=https://[project-id].supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # サーバーサイド用（オプション）
 
 # NVD API設定（オプション - より高いレート制限のため）
 NVD_API_KEY=your-nvd-api-key
@@ -105,16 +107,15 @@ pnpm dev
 
 ### データベース設定
 
-このプロジェクトは **Diesel ORM (Rust GraphQL)** と **Supabase PostgreSQL** を使用しています。
+このプロジェクトは **Diesel ORM (Rust GraphQL)** と **PostgreSQL** を使用しています。
+PostgreSQL は `docker-compose.prod.yml` の `postgres` サービスであり、managed な
+Supabase プロジェクトではありません（2026-09-02 に Supabase 依存を撤去）。
 
-#### Supabase設定手順
+#### データベース設定手順
 
-1. [Supabase](https://supabase.com)でアカウントを作成
-2. 新しいプロジェクトを作成
-3. 接続文字列とAPIキーを取得（`.env.local`に設定）
-   - Database Settings → Connection String（PostgreSQL）
-   - API Settings → Project API keys（anon key と service_role key）
-4. マイグレーションを実行：
+1. `docker compose -f docker-compose.prod.yml up -d postgres` で PostgreSQL を起動
+2. `DATABASE_URL` を `.env.local` に設定（接続文字列は上の環境変数ブロックの形）
+3. マイグレーションを実行：
 
 \`\`\`bash
 # Rust GraphQLサービスでマイグレーションを実行
@@ -188,7 +189,6 @@ scap.etzhayyim.com/
 ├── resources/            # リソース
 │   ├── schemas/         # スキーマ（既存）
 │   └── adapters/        # アダプター
-│       ├── supabase/    # Supabase アダプター
 │       └── data.ts      # データアダプター
 ├── ports/               # ポート
 │   ├── ui/              # Human Port（UI Port）

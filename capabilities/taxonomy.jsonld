@@ -306,7 +306,7 @@
       "@id": "https://scap.etzhayyim.com/capabilities/realtime-messaging",
       "@type": "skos:Concept",
       "prefLabel": "Real-time Messaging",
-      "definition": "Real-time messaging and event distribution using Supabase Realtime",
+      "definition": "Real-time messaging and event distribution. Not implemented: the Supabase Realtime adapter was never wired to anything and was removed 2026-09-02. Implement with kotoba-lang/capability-topic-publish and capability-topic-subscribe.",
       "broader": {
         "@id": "https://scap.etzhayyim.com/capabilities/data-integration"
       },
