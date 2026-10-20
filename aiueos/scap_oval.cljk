@@ -1,0 +1,69 @@
+(ns scap.oval
+  "OVAL definition 判定コア — itonami dapp bundle（pure, :effects #{}）。
+
+  OVAL Definition の検証と criteria 評価の判定（正本:
+  resources/schemas/zod/ovalDefinition.ts — zod schema が唯一の正本）:
+
+  - **class は閉じた集合**: vulnerability / compliance / inventory の 3 つ。
+  - **criteria の operator は AND / OR**。評価は AND = すべて真、
+    OR = 1 つでも真。空 criteria は AND なら空虚に真、OR なら偽。
+  - criterion は testRef と comment を持つ。
+  - definition の id / title / description は長さ 1 以上（空は不可）。
+
+  class-ok: 1 = 閉じた集合内（0 vulnerability / 1 compliance / 2 inventory）
+  criteria-eval: operator 0 = AND / 1 = OR。戻り 1 = 真
+  criterion-ok: 1 = testRef と comment が揃う
+  field-ok: 1 = 長さ 1 以上
+
+  実行 host はスカラーのみ = KIR v3 / i64/direct ABI（kernel/selfhost 両対応）。
+
+  テストはゼロ引数 test-*、戻り 1/0:
+  <amu> test aiueos/scap_oval.cljk"
+  (:export [main class-ok criteria-eval criterion-ok field-ok
+            test-class test-and test-or test-empty test-criterion
+            test-field test-fail-closed]))
+
+(defn main [] :i64
+  0)
+
+(defn class-ok [class-code :i64] :i64
+  (if (and (>= class-code 0) (<= class-code 2)) 1 0))
+
+(defn criteria-eval [operator :i64 n-true :i64 n-total :i64] :i64
+  (if (= operator 0)
+    ;; AND: すべて真（空は空虚に真）
+    (if (= n-true n-total) 1 0)
+    ;; OR: 1 つでも真（空は偽）
+    (if (> n-true 0) 1 0)))
+
+(defn criterion-ok [has-test-ref :i64 has-comment :i64] :i64
+  (if (and (= has-test-ref 1) (= has-comment 1)) 1 0))
+
+(defn field-ok [len :i64] :i64
+  (if (>= len 1) 1 0))
+
+;; --- tests（戻り 1 = pass） ------------------------------------------------
+
+(defn test-class [] :i64
+  (if (= (+ (class-ok 0) (class-ok 1) (class-ok 2) (class-ok 3) (class-ok -1)) 3) 1 0))
+
+(defn test-and [] :i64
+  (if (= (+ (criteria-eval 0 2 2) (criteria-eval 0 1 2)) 1) 1 0))
+
+(defn test-or [] :i64
+  (if (= (+ (criteria-eval 1 1 3) (criteria-eval 1 0 3)) 1) 1 0))
+
+(defn test-empty [] :i64
+  ;; 空 criteria: AND は空虚に真、OR は偽
+  (if (= (+ (criteria-eval 0 0 0) (criteria-eval 1 0 0)) 1) 1 0))
+
+(defn test-criterion [] :i64
+  (if (= (+ (criterion-ok 1 1) (criterion-ok 1 0) (criterion-ok 0 0)) 1) 1 0))
+
+(defn test-field [] :i64
+  ;; id / title / description は長さ 1 以上
+  (if (= (+ (field-ok 1) (field-ok 5) (field-ok 0) (field-ok -3)) 2) 1 0))
+
+(defn test-fail-closed [] :i64
+  ;; 閉じた集合の外の class は拒否
+  (if (= (+ (class-ok 4) (class-ok 99)) 0) 1 0))
