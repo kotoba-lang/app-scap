@@ -1,0 +1,27 @@
+(ns scap.oval-parity-test
+  "aiueos/scap_oval.cljk（判定コア）と正本 ovalDefinition.ts（zod schema =
+  唯一の正本）の parity。schema の規約が変われば落ちる drift 検査。"
+  (:require [clojure.test :refer [deftest is testing]]
+            [clojure.string :as str]
+            ["fs" :as fs]))
+
+(def src
+  (fs/readFileSync
+   (str/join "/" ["resources" "schemas" "zod" "ovalDefinition.ts"]) "utf8"))
+
+(deftest oval-rules-match-guest
+  (testing "guest test-class: class は閉じた集合（vulnerability / compliance / inventory）"
+    (is (str/includes? src "vulnerability"))
+    (is (str/includes? src "compliance"))
+    (is (str/includes? src "inventory")))
+  (testing "guest test-and / test-or: operator は AND / OR のみ"
+    (is (str/includes? src "z.enum("))
+    (is (str/includes? src "AND"))
+    (is (str/includes? src "OR")))
+  (testing "guest test-criterion: criterion は testRef と comment を持つ"
+    (is (str/includes? src "testRef"))
+    (is (str/includes? src "comment")))
+  (testing "guest test-field: id / title / description は min(1)"
+    (is (str/includes? src "min(1)"))
+    (is (str/includes? src "id:"))
+    (is (str/includes? src "title:"))))

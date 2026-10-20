@@ -1,0 +1,19 @@
+;; app-scap — itonami（dapp）の aiueos アプリ記述子（notes.edn 形）。
+;; 判定コアは aiueos/scap_oval.cljk（OVAL definition の検証と criteria 評価）。
+;; 正本は resources/schemas/zod/ovalDefinition.ts（zod schema = 唯一の正本）。
+;; pure（:effects #{}）。
+{:aiueos/component :app/scap-oval
+ :aiueos/kind :app
+ :aiueos/trust :untrusted
+ :aiueos/source "scap_oval.cljk"
+ :aiueos/wasm "scap_oval.wasm"
+ :aiueos/entry "main"
+ :aiueos/args []
+ :aiueos/imports #{}
+ :aiueos/exports #{:app/main
+                   :app/class-ok
+                   :app/criteria-eval
+                   :app/criterion-ok
+                   :app/field-ok}
+ :aiueos/effects #{}
+ :aiueos/limits {:memory-pages 16 :fuel 5000000}}
